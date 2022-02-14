@@ -12,6 +12,7 @@ namespace SingularToPlural
     public static class StringExtensions
     {
         private static readonly ConcurrentDictionary<string, string> _cache = new ConcurrentDictionary<string, string>();
+        private static readonly ConcurrentDictionary<string, Regex> _regexCache = new ConcurrentDictionary<string, Regex>();
         public static string Pluralize(this string word)
         {
             if (_cache.ContainsKey(word)) return _cache[word];
@@ -36,7 +37,7 @@ namespace SingularToPlural
 
         private static bool TryReplace(string word, string pattern, string replacement, out string replaced)
         {
-            Regex rgx = new Regex(pattern);
+            Regex rgx = _regexCache.GetOrAdd(pattern, p => new Regex(p, RegexOptions.IgnoreCase));
             replaced = rgx.Replace(word, replacement);
             return rgx.IsMatch(word);
         }
